@@ -52,6 +52,8 @@ void MainWindow::on_compressButton_clicked()
         process.setArguments(arguments);
         process.start();
         process.waitForFinished();
+        QFileInfo targetInfo(outputFile);
+        ui->mainTable->setItemTargetSize(item.id, targetInfo.size());
         qDebug() << process.arguments().join(" ");
     }
     this->setDisabled(false);

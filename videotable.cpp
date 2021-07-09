@@ -31,6 +31,14 @@ QVector<VideoTable::CompressItem> VideoTable::compressItems()
     return res;
 }
 
+void VideoTable::setItemTargetSize(int id, qint64 size)
+{
+    QTableWidgetItem* item = new QTableWidgetItem(
+                QString::number(double(size) / (1024.0 * 1024.0), 'f', 2) + "Mb");
+    item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+    this->setItem(id, NewSizeCol, item);
+}
+
 void VideoTable::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
@@ -49,7 +57,7 @@ void VideoTable::dropEvent(QDropEvent *event)
         item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
         this->setItem(rowIdx, NameCol, item);
         QFileInfo info(url.toLocalFile());
-        item = new QTableWidgetItem(QString::number(info.size()));
+        item = new QTableWidgetItem(QString::number(double(info.size()) / (1024.0 * 1024.0), 'f', 2) + "Mb");
         item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
         this->setItem(rowIdx, SizeCol, item);
         item = new QTableWidgetItem(QString::number(23));
