@@ -20,6 +20,8 @@ private slots:
 
     void on_outputDirBrowse_clicked();
 
+    void on_actionClear_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

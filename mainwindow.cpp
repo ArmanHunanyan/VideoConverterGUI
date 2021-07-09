@@ -69,3 +69,9 @@ void MainWindow::on_outputDirBrowse_clicked()
     ui->outputDirEdit->setText(QDir::toNativeSeparators(path));
 }
 
+
+void MainWindow::on_actionClear_triggered()
+{
+    this->ui->mainTable->setRowCount(0);
+}
+
