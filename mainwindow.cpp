@@ -52,7 +52,6 @@ void MainWindow::on_compressButton_clicked()
         process.setArguments(arguments);
         process.start();
         process.waitForFinished();
-     //   qDebug() << process.readAllStandardError();
         qDebug() << process.arguments().join(" ");
     }
     this->setDisabled(false);
