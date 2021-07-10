@@ -43,8 +43,11 @@ public:
     };
 
     QVector<CompressItem> compressItems();
+    CompressItem compressItem(int id);
 
     void setItemTargetSize(int id, qint64 size);
+    void setItemError(int id);
+    void selectById(int id);
 
 private:
     void dragEnterEvent(QDragEnterEvent *event) final override;

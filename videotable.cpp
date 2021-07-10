@@ -31,12 +31,37 @@ QVector<VideoTable::CompressItem> VideoTable::compressItems()
     return res;
 }
 
+VideoTable::CompressItem VideoTable::compressItem(int id)
+{
+    return CompressItem(
+                id,
+                item(id, FullPathCol)->text(),
+                item(id, FormatCol)->text() == "H.264" ? H264 : H265,
+                item(id, CRFCol)->text().toUInt(),
+                item(id, CopyMetaCol)->checkState() == Qt::Checked
+                    );
+}
+
 void VideoTable::setItemTargetSize(int id, qint64 size)
 {
     QTableWidgetItem* item = new QTableWidgetItem(
                 QString::number(double(size) / (1024.0 * 1024.0), 'f', 2) + "Mb");
     item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
     this->setItem(id, NewSizeCol, item);
+}
+
+void VideoTable::setItemError(int id)
+{
+    QTableWidgetItem* item = new QTableWidgetItem(
+                "Error");
+    item->setForeground(QColorConstants::Red);
+    item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+    this->setItem(id, NewSizeCol, item);
+}
+
+void VideoTable::selectById(int id)
+{
+    selectRow(id);
 }
 
 void VideoTable::dragEnterEvent(QDragEnterEvent *event)

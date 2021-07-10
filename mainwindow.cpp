@@ -3,15 +3,24 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QFileInfo>
-#include <QProcess>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_processRunner(new ProcessRunner(this))
 {
     ui->setupUi(this);
     ui->centralwidget->setAcceptDrops(true);
+    ui->outputDisplay->hide();
+    ui->controlWidget->show();
+
+    QObject::connect(m_processRunner, SIGNAL(processStarted(int, const QString&)), this, SLOT(onProcessStarted(int, const QString&)));
+    QObject::connect(m_processRunner, SIGNAL(processFinished(int, const QString&, bool)), this, SLOT(onProcessFinished(int, const QString&, bool)));
+    QObject::connect(m_processRunner, SIGNAL(processError(const QString&)), this, SLOT(onProcessError(const QString&)));
+    QObject::connect(m_processRunner, SIGNAL(readyReadStandardError(const QString&)), this, SLOT(onReadyReadStandardError(const QString&)));
+    QObject::connect(m_processRunner, SIGNAL(readyReadStandardOutput(const QString&)), this, SLOT(onReadyReadStandardOutput(const QString&)));
+    QObject::connect(m_processRunner, SIGNAL(batchFinished()), this, SLOT(onBatchFinished()));
+    QObject::connect(m_processRunner, SIGNAL(batchStarted()), this, SLOT(onBatchStarted()));
 }
 
 MainWindow::~MainWindow()
@@ -19,27 +28,33 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+QString MainWindow::targetFileName(const QString& inputFileName)
+{
+    QString outputDir = ui->outputDirEdit->text();
+    QFileInfo info(inputFileName);
+    auto outputFile = outputDir.trimmed();
+    if (!outputFile.endsWith(QDir::separator())) {
+        outputFile.append(QDir::separator());
+    }
+    outputFile.append(info.baseName() + ui->suffixEdit->text() + '.' + info.completeSuffix());
+    outputFile = QDir::toNativeSeparators(outputFile);
+    return outputFile;
+}
 
 void MainWindow::on_compressButton_clicked()
 {
     QString outputDir = ui->outputDirEdit->text();
-    QString suffix = ui->suffixEdit->text();
     if (outputDir.isEmpty()) {
         QMessageBox::information(this, "Output Dir is Empty", "Please select output directory");
         return;
     }
-    this->setDisabled(true);
+    m_processRunner->clear();
     QVector<VideoTable::CompressItem> items = this->ui->mainTable->compressItems();
     for (const auto& item: items) {
-        QFileInfo info(item.path);
-        auto outputFile = outputDir.trimmed();
-        if (!outputFile.endsWith(QDir::separator())) {
-            outputFile.append(QDir::separator());
-        }
-        outputFile.append(info.baseName() + suffix + '.' + info.completeSuffix());
-        outputFile = QDir::toNativeSeparators(outputFile);
+        QString outputFile = targetFileName(item.path);
 
-        QStringList arguments = QStringList() << "-i" << QDir::toNativeSeparators(item.path) << "-vcodec"
+        QStringList arguments = QStringList() << "-y"
+                << "-i" << QDir::toNativeSeparators(item.path) << "-vcodec"
                 << (item.format == VideoTable::H264 ? "libx264" : "libx265")
                 << "-crf" << QString::number(item.crf);
         if (item.copyMeta) {
@@ -47,16 +62,10 @@ void MainWindow::on_compressButton_clicked()
             arguments.append("0");
         }
         arguments.append(outputFile);
-        QProcess process(this);
-        process.setProgram("ffmpeg");
-        process.setArguments(arguments);
-        process.start();
-        process.waitForFinished();
-        QFileInfo targetInfo(outputFile);
-        ui->mainTable->setItemTargetSize(item.id, targetInfo.size());
-        qDebug() << process.arguments().join(" ");
+
+        m_processRunner->addTask(item.id, "ffmpeg", arguments);
+        m_processRunner->run();
     }
-    this->setDisabled(false);
 }
 
 
@@ -73,5 +82,60 @@ void MainWindow::on_outputDirBrowse_clicked()
 void MainWindow::on_actionClear_triggered()
 {
     this->ui->mainTable->setRowCount(0);
+}
+
+void MainWindow::onProcessStarted(int id, const QString& cmdline)
+{
+    ui->outputDisplay->setTextColor(QColorConstants::Green);
+    ui->outputDisplay->insertPlainText(cmdline + "\r\n");
+    ui->outputDisplay->setTextColor(QColorConstants::Black);
+    ui->outputDisplay->ensureCursorVisible();
+    ui->mainTable->selectById(id);
+}
+
+void MainWindow::onProcessFinished(int id, const QString& cmdline, bool normal)
+{
+    if (normal) {
+        ui->outputDisplay->setTextColor(QColorConstants::Green);
+        ui->outputDisplay->insertPlainText("Successfully finished: " + cmdline + "\r\n");
+
+        QString targetFile = targetFileName(ui->mainTable->compressItem(id).path);
+        QFileInfo targetInfo(targetFile);
+        ui->mainTable->setItemTargetSize(id, targetInfo.size());
+
+    } else {
+        ui->outputDisplay->setTextColor(QColorConstants::Red);
+        ui->outputDisplay->insertPlainText("Finished with errors: " + cmdline + "\r\n");
+        ui->mainTable->setItemError(id);
+    }
+    ui->outputDisplay->setTextColor(QColorConstants::Black);
+    ui->outputDisplay->ensureCursorVisible();
+}
+
+void MainWindow::onProcessError(const QString& msg)
+{
+
+}
+
+void MainWindow::onBatchFinished()
+{
+    ui->outputDisplay->hide();
+    ui->controlWidget->show();
+}
+
+void MainWindow::onBatchStarted()
+{
+    ui->outputDisplay->show();
+    ui->controlWidget->hide();
+}
+
+void MainWindow::onReadyReadStandardError(const QString& content)
+{
+    ui->outputDisplay->append(content);
+}
+
+void MainWindow::onReadyReadStandardOutput(const QString& content)
+{
+
 }
 

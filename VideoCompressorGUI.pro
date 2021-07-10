@@ -11,17 +11,16 @@ CONFIG += c++11
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    outputdialog.cpp \
+    processrunner.cpp \
     videotable.cpp
 
 HEADERS += \
     mainwindow.h \
-    outputdialog.h \
+    processrunner.h \
     videotable.h
 
 FORMS += \
-    mainwindow.ui \
-    outputdialog.ui
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
