@@ -48,6 +48,9 @@ public:
     void setItemTargetSize(int id, qint64 size);
     void setItemError(int id);
     void selectById(int id);
+    void setSelItemOptions(unsigned crf, Format format, bool copyMeta);
+    void setAllItemOptions(unsigned crf, Format format, bool copyMeta);
+    void setItemOptions(int id, unsigned crf, Format format, bool copyMeta);
 
 private:
     void dragEnterEvent(QDragEnterEvent *event) final override;

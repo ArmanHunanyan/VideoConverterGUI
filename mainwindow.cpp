@@ -136,6 +136,40 @@ void MainWindow::onReadyReadStandardError(const QString& content)
 
 void MainWindow::onReadyReadStandardOutput(const QString& content)
 {
-
+    ui->outputDisplay->append(content);
 }
+
+void MainWindow::on_setOptionsButton_clicked()
+{
+    if (!ui->sameForAllCheckBox->isChecked()) {
+        ui->mainTable->setSelItemOptions(ui->crfEdit->text().toUInt(),
+                               ui->formatEdit->currentText() == "H.264" ? VideoTable::H264 : VideoTable::H265,
+                               ui->copyMetaCheckbox->isChecked());
+    } else {
+        ui->mainTable->setAllItemOptions(ui->crfEdit->text().toUInt(),
+                               ui->formatEdit->currentText() == "H.264" ? VideoTable::H264 : VideoTable::H265,
+                               ui->copyMetaCheckbox->isChecked());
+    }
+}
+
+
+void MainWindow::on_sameForAllCheckBox_stateChanged(int arg1)
+{
+    updateSetButtonState();
+}
+
+void MainWindow::on_mainTable_itemSelectionChanged()
+{
+    updateSetButtonState();
+}
+
+void MainWindow::updateSetButtonState()
+{
+    if (!ui->sameForAllCheckBox->isChecked() && ui->mainTable->selectedItems().isEmpty()) {
+        ui->setOptionsButton->setDisabled(true);
+    } else {
+        ui->setOptionsButton->setEnabled(true);
+    }
+}
+
 

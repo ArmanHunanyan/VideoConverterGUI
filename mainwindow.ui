@@ -183,6 +183,9 @@
               <property name="text">
                <string/>
               </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
            </layout>
@@ -217,6 +220,9 @@
             <widget class="QCheckBox" name="sameForAllCheckBox">
              <property name="text">
               <string>Same for All</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>

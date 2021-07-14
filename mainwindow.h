@@ -19,6 +19,7 @@ public:
 
 private:
     QString targetFileName(const QString& inputFileName);
+    void updateSetButtonState();
 
 private slots:
     void on_compressButton_clicked();
@@ -32,6 +33,12 @@ private slots:
     void onBatchStarted();
     void onReadyReadStandardError(const QString& content);
     void onReadyReadStandardOutput(const QString& content);
+
+    void on_setOptionsButton_clicked();
+
+    void on_sameForAllCheckBox_stateChanged(int arg1);
+
+    void on_mainTable_itemSelectionChanged();
 
 private:
     Ui::MainWindow *ui;

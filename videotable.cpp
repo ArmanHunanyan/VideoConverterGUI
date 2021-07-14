@@ -64,6 +64,40 @@ void VideoTable::selectById(int id)
     selectRow(id);
 }
 
+void VideoTable::setSelItemOptions(unsigned crf, Format format, bool copyMeta)
+{
+    QModelIndexList sel = selectedIndexes();
+    if (sel.empty()) {
+        return;
+    }
+    for (const auto& selItem : sel) {
+        setItemOptions(selItem.row(), crf, format, copyMeta);
+    }
+}
+
+void VideoTable::setAllItemOptions(unsigned crf, Format format, bool copyMeta)
+{
+    for (int idx = 0, size = rowCount(); idx < size; ++idx) {
+        setItemOptions(idx, crf, format, copyMeta);
+    }
+}
+
+void VideoTable::setItemOptions(int idx, unsigned crf, Format format, bool copyMeta)
+{
+    QTableWidgetItem* item = new QTableWidgetItem(QString::number(crf));
+    item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+    this->setItem(idx, CRFCol, item);
+
+    item = new QTableWidgetItem(format == H264 ? "H.264" : "H.265");
+    item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+    this->setItem(idx, FormatCol, item);
+
+    item = new QTableWidgetItem();
+    item->setCheckState(copyMeta ? Qt::Checked : Qt::Unchecked);
+    item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+    this->setItem(idx, CopyMetaCol, item);
+}
+
 void VideoTable::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
