@@ -40,6 +40,8 @@ private slots:
 
     void on_mainTable_itemSelectionChanged();
 
+    void on_actionCopy_Meta_triggered();
+
 private:
     Ui::MainWindow *ui;
     ProcessRunner* m_processRunner;

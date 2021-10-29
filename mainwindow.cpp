@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "copymetadialog.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -172,4 +173,34 @@ void MainWindow::updateSetButtonState()
     }
 }
 
+void MainWindow::on_actionCopy_Meta_triggered()
+{
+    CopyMetaDialog dlg;
+    auto code = dlg.exec();
+    if (code == QDialog::Rejected) {
+        return;
+    }
+
+    QFileInfo info(dlg.fromFilePath());
+    auto outputFile = dlg.toFileDirectory().trimmed();
+    if (!outputFile.endsWith(QDir::separator())) {
+        outputFile.append(QDir::separator());
+    }
+    outputFile.append(info.baseName() + dlg.prefix() + '.' + info.completeSuffix());
+    outputFile = QDir::toNativeSeparators(outputFile);
+
+    QProcess process;
+    process.setProgram("ffmpeg");
+    QStringList arguments = QStringList()
+            << "-i" << QDir::toNativeSeparators(dlg.copyMetaFromFilePath())
+            << "-i" << QDir::toNativeSeparators(dlg.fromFilePath())
+            << "-map" << "1" << "-c" << "copy" << "-map_metadata" << "0"
+            << outputFile;
+
+    qDebug() << arguments.join(" ");
+    process.setArguments(arguments);
+    process.start();
+    process.waitForFinished();
+    qDebug() << process.errorString();
+}
 
