@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "copymetadialog.h"
+#include "renamefilesdialog.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -202,5 +203,48 @@ void MainWindow::on_actionCopy_Meta_triggered()
     process.start();
     process.waitForFinished();
     qDebug() << process.errorString();
+}
+
+
+void MainWindow::on_actionRename_Files_triggered()
+{
+    RenameFilesDialog dlg;
+    auto code = dlg.exec();
+    if (code == QDialog::Rejected) {
+        return;
+    }
+
+    QDir::SortFlags sortFlag;
+    if (dlg.sortBy() == RenameFilesDialog::SB_DATE_ASCENDING) {
+        sortFlag = QDir::SortFlags(QDir::Time | QDir::Reversed);
+    } else {
+        sortFlag = QDir::SortFlags(QDir::Time);
+    }
+    QDir dir(dlg.directory(), dlg.pattern(), sortFlag, QDir::Files);
+    auto entries = dir.entryList();
+
+    if (dlg.sortBy() == RenameFilesDialog::SB_DATE_ASCENDING) {
+        std::sort(entries.begin(), entries.end(), [&dir](const auto& lhs, const auto& rhs) {
+            return QFileInfo(dir.absoluteFilePath(lhs)).birthTime()
+                    <
+                    QFileInfo(dir.absoluteFilePath(rhs)).birthTime();
+
+        });
+    } else {
+        std::sort(entries.begin(), entries.end(), [&dir](const auto& lhs, const auto& rhs) {
+            return QFileInfo(dir.absoluteFilePath(lhs)).birthTime()
+                    >
+                    QFileInfo(dir.absoluteFilePath(rhs)).birthTime();
+
+        });
+    }
+
+    unsigned currNum = dlg.startNumber();
+
+    for (const auto& entry : entries) {
+        std::stringstream ss;
+        ss << std::setw(dlg.numDigits()) << std::setfill('0') << currNum++;
+        QFile::rename(dir.absoluteFilePath(entry), dir.absoluteFilePath(dlg.prefix() + ss.str().c_str() + '.' + QFileInfo(entry).completeSuffix()));
+    }
 }
 

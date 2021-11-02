@@ -294,6 +294,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionCopy_Meta"/>
+    <addaction name="actionRename_Files"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -356,6 +357,11 @@
   <action name="actionCopy_Meta">
    <property name="text">
     <string>Copy Meta</string>
+   </property>
+  </action>
+  <action name="actionRename_Files">
+   <property name="text">
+    <string>Rename Files</string>
    </property>
   </action>
  </widget>

@@ -42,6 +42,8 @@ private slots:
 
     void on_actionCopy_Meta_triggered();
 
+    void on_actionRename_Files_triggered();
+
 private:
     Ui::MainWindow *ui;
     ProcessRunner* m_processRunner;

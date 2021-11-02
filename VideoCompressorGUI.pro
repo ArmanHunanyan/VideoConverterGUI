@@ -13,17 +13,20 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     processrunner.cpp \
+    renamefilesdialog.cpp \
     videotable.cpp
 
 HEADERS += \
     copymetadialog.h \
     mainwindow.h \
     processrunner.h \
+    renamefilesdialog.h \
     videotable.h
 
 FORMS += \
     copymetadialog.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    renamefilesdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
